@@ -1,30 +1,27 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
-import * as path from "path";
 import * as vscodeHelpers from "vscode-helpers";
 
 export class HackerNewsTreeViewProvider
-  implements vscode.TreeDataProvider<Dependency>
+  implements vscode.TreeDataProvider<News>
 {
   constructor() {}
 
   private _onDidChangeTreeData: vscode.EventEmitter<
-    Dependency | undefined | null | void
-  > = new vscode.EventEmitter<Dependency | undefined | null | void>();
-  readonly onDidChangeTreeData: vscode.Event<
-    Dependency | undefined | null | void
-  > = this._onDidChangeTreeData.event;
+    News | undefined | null | void
+  > = new vscode.EventEmitter<News | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<News | undefined | null | void> =
+    this._onDidChangeTreeData.event;
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
   }
 
-  getTreeItem(element: Dependency): vscode.TreeItem {
+  getTreeItem(element: News): vscode.TreeItem {
     console.log("getTreeItem");
     return element;
   }
 
-  getChildren(element?: Dependency): Thenable<any[]> {
+  getChildren(element?: News): Thenable<any[]> {
     console.log("getChildren");
     return this.getTopStories();
   }
@@ -44,45 +41,30 @@ export class HackerNewsTreeViewProvider
         return JSON.parse((await result.readBody()).toString("utf8"));
       })
     );
-    console.log({ posts });
     return posts.map((post) => {
       const news = new News(
         post?.title,
+        post?.url,
         vscode.TreeItemCollapsibleState.None
       );
       return news;
     });
-  }
-
-  private pathExists(p: string): boolean {
-    try {
-      fs.accessSync(p);
-    } catch (err) {
-      return false;
-    }
-    return true;
   }
 }
 
 class News extends vscode.TreeItem {
   constructor(
     public readonly label: string,
+    public readonly url: string,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState
   ) {
     super(label, collapsibleState);
     this.tooltip = this.label;
     this.description = this.label;
-  }
-}
-
-class Dependency extends vscode.TreeItem {
-  constructor(
-    public readonly label: string,
-    private version: string,
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState
-  ) {
-    super(label, collapsibleState);
-    this.tooltip = `${this.label}-${this.version}`;
-    this.description = this.version;
+    this.command = {
+      command: "hackernews.itemClick",
+      title: "Open Url",
+      arguments: [url],
+    };
   }
 }

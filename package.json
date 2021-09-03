@@ -15,6 +15,10 @@
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
+			{
+				"command": "hackernews.itemClick", 
+				"title": "Open"
+			}
 		],
 		"viewsContainers": {
 			"activitybar": [
@@ -33,7 +37,8 @@
 				  "contextualTitle": "Hacker News"
 				}
 			]
-		}
+		},
+		"menus": {}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
